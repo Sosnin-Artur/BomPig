@@ -5,7 +5,7 @@ The starting point is the location of the stone on the grid.
 Subsequently, the dimensions of the stone are taken to place other objects on the map.    
 ## Player movement through the level and placing bombs     
 The player moves with the joystick and sets the bombs with the button.      
-UI elements have been made responsive for different resolutions.
+UI elements have been made responsive for different resolutions.      
 Explosions are made in the style of a bomberman game.
 ## Enemy   
 The enemy has three types of animations: dirty, aggressive and normal (they change during the game).       
