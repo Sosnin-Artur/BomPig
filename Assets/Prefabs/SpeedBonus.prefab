@@ -124,3 +124,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   duration: 1.5
   speedModifier: 1.5
+  renderer: {fileID: 1777796926102714065}
+  collider: {fileID: 8095817881076407071}
