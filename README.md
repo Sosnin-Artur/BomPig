@@ -1,5 +1,4 @@
-# BomPig  
-https://drive.google.com/file/d/1t3u_SapZNBxEBoAVs9FO3DIMkDZzUMk1/view?usp=sharing    
+# BomPig   
 ## Level generation     
 The level is generated procedurally.     
 The starting point is the location of the stone on the grid.    
