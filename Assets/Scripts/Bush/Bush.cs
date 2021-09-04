@@ -13,16 +13,11 @@ public class Bush : MonoBehaviour
     {
         _row = (int)coords.x;
         _col = (int)coords.y;
-    }
-
-    private void Start()
-    {
-        _gameManager = GameObject.Find("Managers").GetComponent<GameManager>();        
-    }
+    }    
         
     private void OnDestroy()
     {
-        _gameManager.ClearCell(_row, _col);
+        GameManager.Location.ClearCell(_row, _col);
         Destroy(gameObject);
     }
 }

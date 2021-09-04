@@ -6,49 +6,68 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float speed = 3.0f;    
     
-    // Creation bounces.
-    [SerializeField] private int row = 5;
-    [SerializeField] private int col = 0;
-
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject bombPrefab;
     [SerializeField] private Vector3 vertDirection; // Diection to move up the level.
     [SerializeField] private GameManager gameManager;
     [SerializeField] private Joystick joystick;
-    
-    private float _speedModifier = 1.0f;
-    
-    public IEnumerator SpeedUp(float duration, float speedModifier)
-    {        
-        _speedModifier = speedModifier;
-        yield return new WaitForSeconds(duration);
-        _speedModifier = 1;     
+    [SerializeField] private AudioClip pickUpSound;    
+
+    private float _speedModifier = 1.0f;            
+    public float SpeedModifier
+    {
+        get
+        {
+            return _speedModifier;
+        }
+        set
+        {
+            if (value > 0)
+            {
+                _speedModifier = value;
+            }
+        }    
+    }
+     
+    private bool _isInvulnerable;
+    public bool IsInvulnerable
+    {
+        get
+        {
+            return _isInvulnerable;
+        }
+        set
+        {
+            _isInvulnerable = value;
+        }    
     }
 
     public void TakeDamage()
     {
-        gameManager.GameOver();
+        if (!_isInvulnerable)
+        {
+            gameManager.GameOver();
+        }        
     }
         
     public void DropBomb()
-    {
-        Vector2 pos = transform.position;
-        gameManager.FromPositionToGrid(pos, out row, out col);
-        gameManager.FromGridToPosition(row, col, ref pos);
-        Instantiate(bombPrefab, pos, Quaternion.identity);    
+    {        
+        if (!GameManager.IsPaused)
+        {
+            Instantiate(bombPrefab, transform.position, Quaternion.identity);       
+        }        
     }
     
-    public void Start()
+    public void Restart()
     {
-        // Seelect random position in bounds
-        // while position is not correct.
-        Vector2 pos = new Vector2();
-        while (!gameManager.FromGridToPosition(Random.Range(0, row), Random.Range(0, col), ref pos))
-        {
-
+        Vector2 pos = new Vector2();        
+        int rowSize = GameManager.Location.Data.GetUpperBound(0);
+        
+        while (!GameManager.Location.FromGridToPosition(UnityEngine.Random.Range(0, rowSize), 0, ref pos))
+        {            
         }
-        transform.position = pos;   
-    }    
+        transform.position = pos; 
+    }
 
     private void Update()
     {
@@ -100,8 +119,17 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy"))
         {
-            gameManager.GameOver();
+            TakeDamage();
         }    
     }    
+
+    private void OnTriggerEnter2D(Collider2D other) 
+    {
+        if (other.CompareTag("PowerUp"))
+        {            
+            GameManager.Audio.PlaySound(pickUpSound);
+            other.GetComponent<IPowerUp>().Implement(this);
+        }    
+    }        
 }
 

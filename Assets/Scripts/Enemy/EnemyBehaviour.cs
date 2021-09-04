@@ -35,6 +35,20 @@ public class EnemyBehaviour : MonoBehaviour
     private int _rowSize;
     private int _colSize;
     private int[,] _map;
+    
+    public float SpeedModifier {get; set;}
+    
+    public bool IsInvulnerable 
+    {
+        get
+        {
+            return _isInvulnerable;
+        } 
+        set
+        {
+            _isInvulnerable = value;
+        }
+    }
 
     public void TakeDamage()
     {
@@ -53,22 +67,29 @@ public class EnemyBehaviour : MonoBehaviour
         }                
     }    
     
-    public void Start()
+    public void Restart()
+    {
+        Vector2 pos = new Vector2();        
+        
+        row = UnityEngine.Random.Range(0, _rowSize - 1);
+        while (!GameManager.Location.FromGridToPosition(row, _colSize - 1, ref pos))
+        {            
+           row = UnityEngine.Random.Range(0, _rowSize - 1);
+        }
+        col = _colSize - 1;
+        transform.position = pos; 
+        StartCoroutine(ChangeDiretion());        
+    }
+
+    private void Start()
     {
         _curSpeed = speed;
-        _rowSize = gameManager.Data.GetUpperBound(0) + 1;
-        _colSize = gameManager.Data.GetUpperBound(1) + 1; 
+        _rowSize = GameManager.Location.Data.GetUpperBound(0) + 1;
+        _colSize = GameManager.Location.Data.GetUpperBound(1) + 1; 
             
-        _map = new int[_rowSize, _colSize];
+        _map = new int[_rowSize, _colSize];        
 
-        Vector2 pos = new Vector2();        
-        while (!gameManager.FromGridToPosition(row, col, ref pos))
-        {
-            row = UnityEngine.Random.Range(0, row);
-            col = UnityEngine.Random.Range(0, col);
-        }
-        transform.position = pos;                
-        StartCoroutine(ChangeDiretion());                
+        SpeedModifier = 1.0f;
     }         
     
     private IEnumerator Move(Vector2 direction, int stepCount)
@@ -76,7 +97,7 @@ public class EnemyBehaviour : MonoBehaviour
         Vector2 pos = Vector2.zero;        
         for (int i = 0; i < stepCount; ++i)
         {
-            if (gameManager.FromGridToPosition(row - (int)direction.y, col + (int)direction.x, ref pos))
+            if (GameManager.Location.FromGridToPosition(row - (int)direction.y, col + (int)direction.x, ref pos))
             {                                    
                 _moveDirectiron = direction;                         
                 yield return StartCoroutine(MoveTo(pos));                                                  
@@ -119,7 +140,7 @@ public class EnemyBehaviour : MonoBehaviour
                 
         while ((Vector2)transform.position != target)
         {                                             
-            transform.position = Vector2.Lerp((Vector2)transform.position, target, Time.deltaTime * _curSpeed);            
+            transform.position = Vector2.Lerp(transform.position, target, Time.deltaTime * _curSpeed * SpeedModifier);            
             yield return null;
         }        
     }
@@ -173,7 +194,7 @@ public class EnemyBehaviour : MonoBehaviour
         {
             for (int j = 0; j < _colSize; ++j)
             {
-                if (gameManager.Data[i, j] != 0)
+                if (GameManager.Location.Data[i, j] != 0)
                 {
                     _map[i, j] = int.MaxValue;
                 }
@@ -183,7 +204,7 @@ public class EnemyBehaviour : MonoBehaviour
         int playerRow;
         int playerCol;
                 
-        if (!gameManager.FromPositionToGrid(target.transform.position, out playerRow, out playerCol))
+        if (!GameManager.Location.FromPositionToGrid(target.transform.position, out playerRow, out playerCol))
         {                     
             yield break;
         }
@@ -215,7 +236,7 @@ public class EnemyBehaviour : MonoBehaviour
                 for (int i = 0, length = _directions.Length; i < length; ++i)
                 {
                     Vector2 temp = point + _directions[i];
-                    if (gameManager.GetCell((int)temp.x, (int)temp.y) == Identifier.None && _map[(int)temp.x, (int)temp.y] == 0)
+                    if (GameManager.Location.GetCell((int)temp.x, (int)temp.y) == Identifier.None && _map[(int)temp.x, (int)temp.y] == 0)
                     {
                         wave.Add(temp);
                         _map[(int)temp.x, (int)temp.y] = counter;
@@ -237,7 +258,7 @@ public class EnemyBehaviour : MonoBehaviour
             for (int i = 0, length = _directions.Length; i < length; ++i)
             {
                 Vector2 temp = enemyPos + _directions[i];
-                if (gameManager.GetCell((int)temp.x, (int)temp.y) == 0 && 
+                if (GameManager.Location.GetCell((int)temp.x, (int)temp.y) == 0 && 
                     _map[(int)temp.x, (int)temp.y] == _map[(int)enemyPos.x, (int)enemyPos.y] - 1)
                 {                                                              
                     enemyPos = temp;                                           
